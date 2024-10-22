@@ -1,0 +1,11 @@
+.venv
+databased.egg-info
+
+.mypy_cache
+.ruff_cache
+
+.coverage
+.pytest_cache
+htmlcov
+
+__pycache__

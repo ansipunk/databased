@@ -1,0 +1,27 @@
+[build-system]
+requires = [ "setuptools", "setuptools-scm" ]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "databased"
+requires-python = ">=3.12,<4"
+dynamic = ["version"]
+dependencies = [
+  "SQLAlchemy>=2,<2.1",
+  "aiosqlite>=0.20,<1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "mypy>=1.12,<2",
+  "pytest-cov>=5,<6",
+  "pytest>=8,<9",
+  "ruff>=0.7,<0.8",
+]
+
+[tool.setuptools.dynamic]
+version = { attr = "databased.__version__" }
+
+[tool.pytest.ini_options]
+addopts = "--cov=databased --cov-report=term-missing --cov-report=html"
+testpaths = ["tests"]
