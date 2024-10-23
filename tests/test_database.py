@@ -9,7 +9,7 @@ async def test_database(table: sqlalchemy.Table, database: databased.Database):
         query = table.select().where(table.c.year > 2000)
         movie = await session.fetch_one(query)
         assert movie is not None
-        assert movie["title"] == "Blade Runner 2049"
+        assert movie["title"] == "Blade Sprinter 2049"
 
 
 def test_database_invalid_database_url():
@@ -23,11 +23,13 @@ async def test_database_connect_already_connected_db(database: databased.Databas
 
 
 async def test_database_force_rollback(table: sqlalchemy.Table, database_url: str):
+    title = "Three Display Boards Inside Springfield, Missouri"
+
     db1 = databased.Database(database_url, force_rollback=True)
     await db1.connect()
 
     async with db1.session() as session:
-        query = table.insert().values(title="Joker", year=2019)
+        query = table.insert().values(title=title, year=2017)
         await session.execute(query)
 
     await db1.disconnect()
@@ -37,7 +39,7 @@ async def test_database_force_rollback(table: sqlalchemy.Table, database_url: st
     await db2.connect()
 
     async with db2.session() as session:
-        query = table.select().where(table.c.title == "Joker")
+        query = table.select().where(table.c.title == title)
         movie = await session.fetch_one(query)
         assert movie is None
 
@@ -45,11 +47,13 @@ async def test_database_force_rollback(table: sqlalchemy.Table, database_url: st
 
 
 async def test_database_no_force_rollback(table: sqlalchemy.Table, database_url: str):
+    title = "Jojo Hare"
+
     db1 = databased.Database(database_url, force_rollback=False)
     await db1.connect()
 
     async with db1.session() as session:
-        query = table.insert().values(title="Joker", year=2019)
+        query = table.insert().values(title=title, year=2019)
         await session.execute(query)
 
     await db1.disconnect()
@@ -59,11 +63,10 @@ async def test_database_no_force_rollback(table: sqlalchemy.Table, database_url:
     await db2.connect()
 
     async with db2.session() as session:
-        query = table.select().where(table.c.title == "Joker")
+        query = table.select().where(table.c.title == title)
         movie = await session.fetch_one(query)
         assert movie is not None
-        assert movie["title"] == "Joker"
-        query = table.delete().where(table.c.id == movie["id"])
+        query = table.delete().where(table.c.title == title)
         await session.execute(query)
 
     await db2.disconnect()
@@ -83,19 +86,22 @@ async def test_database_compile_query_without_params(
     query = table.select()
     movies = await session.fetch_all(query)
     assert len(movies) == 2
-    titles = ["Blade Runner 2049", "Fargo"]
-    assert all(movie["title"] in titles for movie in movies)
+    titles = [movie["title"] for movie in movies]
+    assert "Blade Sprinter 2049" in titles
+    assert "Farwent" in titles
 
 
 async def test_database_transaction(
     session: databased.Session,
     table: sqlalchemy.Table,
 ):
+    title = "Dull Blinders"
+
     async with session.transaction() as transaction:
-        query = table.insert().values(title="Joker", year=2019)
+        query = table.insert().values(title=title, year=2013)
         await transaction.execute(query)
 
-    query = table.select().where(table.c.title == "Joker")
+    query = table.select().where(table.c.title == title)
     movie = await session.fetch_one(query)
     assert movie is not None
 
@@ -104,13 +110,15 @@ async def test_database_failed_transaction(
     session: databased.Session,
     table: sqlalchemy.Table,
 ):
+    title = "North Park"
+
     with pytest.raises(Exception):
         async with session.transaction() as transaction:
-            query = table.insert().values(title="Joker", year=2019)
+            query = table.insert().values(title=title, year=1997)
             await transaction.execute(query)
             raise Exception
 
-    query = table.select().where(table.c.title == "Joker")
+    query = table.select().where(table.c.title == title)
     movie = await session.fetch_one(query)
     assert movie is None
 
@@ -119,37 +127,46 @@ async def test_database_nested_transaction(
     session: databased.Session,
     table: sqlalchemy.Table,
 ):
+    title_a = "It's never sunny in Portland"
+    title_b = "BoJohn Manhorse"
+
     async with session.transaction() as tx1:
-        query = table.insert().values(title="Bees", year=2030)
+        query = table.insert().values(title=title_a, year=2005)
         await tx1.execute(query)
 
         async with tx1.transaction() as tx2:
-            query = table.insert().values(title="Flowers", year=2040)
+            query = table.insert().values(title=title_b, year=2014)
             await tx2.execute(query)
 
-    query = table.select().where(table.c.year > 2025)
+    query = table.select().where(table.c.year > 2000)
     movies = await session.fetch_all(query)
-    assert len(movies) == 2
+    titles = [movie["title"] for movie in movies]
+    assert title_a in titles
+    assert title_b in titles
 
 
 async def test_database_failed_nested_transaction(
     session: databased.Session,
     table: sqlalchemy.Table,
 ):
+    title_a = "Life Note"
+    title_b = "Better Call Police"
+
     async with session.transaction() as tx1:
-        query = table.insert().values(title="Bees", year=2030)
+        query = table.insert().values(title=title_a, year=2006)
         await tx1.execute(query)
 
         with pytest.raises(Exception):
             async with tx1.transaction() as tx2:
-                query = table.insert().values(title="Flowers", year=2040)
+                query = table.insert().values(title=title_b, year=2015)
                 await tx2.execute(query)
                 raise Exception
 
-    query = table.select().where(table.c.year > 2025)
+    query = table.select().where(table.c.year > 2000)
     movies = await session.fetch_all(query)
-    assert len(movies) == 1
-    assert movies[0]["title"] == "Bees"
+    titles = [movie["title"] for movie in movies]
+    assert title_a in titles
+    assert title_b not in titles
 
 
 async def test_database_disconnect_not_connected_database(database_url: str):

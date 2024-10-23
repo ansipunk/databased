@@ -35,8 +35,8 @@ def _context(
 
     conn = engine.connect()
     queries = [
-        table.insert().values(title="Blade Runner 2049", year=2017),
-        table.insert().values(title="Fargo", year=1996),
+        table.insert().values(title="Blade Sprinter 2049", year=2017),
+        table.insert().values(title="Farwent", year=1996),
     ]
     for query in queries:
         conn.execute(query)
