@@ -10,4 +10,4 @@ htmlcov
 
 __pycache__
 
-test.db
+*.sqlite

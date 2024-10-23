@@ -78,14 +78,75 @@ async def test_database_not_connected_get_session(database_url: str):
 
 
 async def test_database_compile_query_without_params(
-    database: databased.Database,
+    session: databased.Session,
     table: sqlalchemy.Table,
 ):
     query = table.select()
-
-    async with database.session() as session:
-        movies = await session.fetch_all(query)
-
+    movies = await session.fetch_all(query)
     assert len(movies) == 2
     titles = ["Blade Runner 2049", "Fargo"]
     assert all(movie["title"] in titles for movie in movies)
+
+
+async def test_database_transaction(
+    session: databased.Session,
+    table: sqlalchemy.Table,
+):
+    async with session.transaction() as transaction:
+        query = table.insert().values(title="Joker", year="2019")
+        await transaction.execute(query)
+
+    query = table.select().where(table.c.title == "Joker")
+    movie = await session.fetch_one(query)
+    assert movie is not None
+
+
+async def test_database_failed_transaction(
+    session: databased.Session,
+    table: sqlalchemy.Table,
+):
+    with pytest.raises(Exception):
+        async with session.transaction() as transaction:
+            query = table.insert().values(title="Joker", year="2019")
+            await transaction.execute(query)
+            raise Exception
+
+    query = table.select().where(table.c.title == "Joker")
+    movie = await session.fetch_one(query)
+    assert movie is None
+
+
+async def test_database_nested_transaction(
+    session: databased.Session,
+    table: sqlalchemy.Table,
+):
+    async with session.transaction() as tx1:
+        query = table.insert().values(title="Bees", year="2030")
+        await tx1.execute(query)
+
+        async with tx1.transaction() as tx2:
+            query = table.insert().values(title="Flowers", year="2040")
+            await tx2.execute(query)
+
+    query = table.select().where(table.c.year > 2025)
+    movies = await session.fetch_all(query)
+    assert len(movies) == 2
+
+
+async def test_database_failed_nested_transaction(
+    session: databased.Session,
+    table: sqlalchemy.Table,
+):
+    async with session.transaction() as tx1:
+        query = table.insert().values(title="Bees", year="2030")
+        await tx1.execute(query)
+
+        with pytest.raises(Exception):
+            async with tx1.transaction() as tx2:
+                query = table.insert().values(title="Flowers", year="2040")
+                await tx2.execute(query)
+                raise Exception
+
+    query = table.select().where(table.c.year > 2025)
+    movies = await session.fetch_all(query)
+    assert len(movies) == 1

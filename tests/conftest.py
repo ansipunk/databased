@@ -4,7 +4,7 @@ import pytest
 import databased
 
 DATABASE_URLS = (
-    "sqlite:///test.db",
+    "sqlite:///test.sqlite",
 )
 
 
@@ -54,10 +54,16 @@ def _context(
 
 @pytest.fixture()
 async def database(database_url: str):
-    database = databased.Database(database_url)
+    database = databased.Database(database_url, force_rollback=True)
     await database.connect()
     yield database
     await database.disconnect()
+
+
+@pytest.fixture()
+async def session(database: databased.Database):
+    async with database.session() as session:
+        yield session
 
 
 def pytest_generate_tests(metafunc):

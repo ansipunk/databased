@@ -6,12 +6,10 @@ build-backend = "setuptools.build_meta"
 name = "databased"
 requires-python = ">=3.12,<4"
 dynamic = ["version"]
-dependencies = [
-  "SQLAlchemy>=2,<2.1",
-  "aiosqlite>=0.20,<1",
-]
+dependencies = ["SQLAlchemy>=2,<2.1"]
 
 [project.optional-dependencies]
+sqlite = ["aiosqlite>=0.20,<1"]
 dev = [
   "mypy>=1.12,<2",
   "pytest-asyncio>=0.24,<1",
