@@ -17,7 +17,7 @@ bootstrap:
 	$(PYTHON) -m pip install -e .[sqlite,dev]
 
 lint: $(VENV)
-	$(PYTHON) -m ruff check --fix databased tests
+	$(PYTHON) -m ruff check databased tests
 	$(PYTHON) -m mypy --strict databased
 
 test: $(VENV)

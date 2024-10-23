@@ -1,8 +1,8 @@
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import aiosqlite
-from sqlalchemy.sql import ClauseElement
 from sqlalchemy.dialects import sqlite
+from sqlalchemy.sql import ClauseElement
 
 from databased.backends import DatabaseBackend, SessionBackend
 
