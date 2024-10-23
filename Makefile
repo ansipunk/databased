@@ -24,5 +24,5 @@ test: $(VENV)
 	$(PYTHON) -m pytest
 
 clean:
-	rm -rf $(VENV) .coverage .mypy_cache .pytest_cache .ruff_cache htmlcov databased.egg-info *.sqlite
+	rm -rf $(VENV) .coverage .mypy_cache .pytest_cache .ruff_cache htmlcov databased.egg-info coverage.xml *.sqlite
 	find . -type d -name "__pycache__" | xargs rm -rf
