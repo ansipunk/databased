@@ -13,8 +13,9 @@ class DatabaseBackend:
     _force_rollback_session: Optional["SessionBackend"] = None
     _connected: bool = False
 
-    def __init__(self, url: str, *, force_rollback: bool) -> None:
-        raise NotImplementedError
+    def __init__(self, url: str, *, force_rollback: bool = False) -> None:
+        self._url = url
+        self._force_rollback = force_rollback
 
     async def _connect(self) -> None:
         raise NotImplementedError
@@ -74,7 +75,8 @@ class SessionBackend:
         force_rollback: bool = False,
         **kwargs: dict[str, Any],
     ) -> None:
-        raise NotImplementedError
+        self._is_root = is_root
+        self._force_rollback = force_rollback
 
     async def _execute(
         self,
@@ -150,14 +152,12 @@ class SessionBackend:
             await self._commit_transaction(self._transaction)
 
     async def cancel(self) -> None:
-        if not self._transaction:
-            raise errors.SessionNotOpenError
-
-        await self._cancel_transaction(self._transaction)
+        if self._transaction:
+            await self._cancel_transaction(self._transaction)
 
     async def close(self, *, force: bool = False) -> None:
         if not self._transaction:
-            raise errors.SessionNotOpenError
+            return
 
         if force or (self._is_root and not self._force_rollback):
             # Only close connections if it's a root session.

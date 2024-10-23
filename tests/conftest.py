@@ -8,12 +8,12 @@ DATABASE_URLS = (
 )
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def metadata() -> sqlalchemy.MetaData:
     return sqlalchemy.MetaData()
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def table(metadata: sqlalchemy.MetaData) -> sqlalchemy.Table:
     return sqlalchemy.Table(
         "movies",
@@ -24,7 +24,7 @@ def table(metadata: sqlalchemy.MetaData) -> sqlalchemy.Table:
     )
 
 
-@pytest.fixture(autouse=True, scope="function")
+@pytest.fixture(autouse=True, scope="session")
 def _context(
     metadata: sqlalchemy.MetaData,
     table: sqlalchemy.Table,
@@ -52,7 +52,7 @@ def _context(
     engine.dispose()
 
 
-@pytest.fixture()
+@pytest.fixture(scope="function")
 async def database(database_url: str):
     database = databased.Database(database_url, force_rollback=True)
     await database.connect()
@@ -68,4 +68,4 @@ async def session(database: databased.Database):
 
 def pytest_generate_tests(metafunc):
     if "database_url" in metafunc.fixturenames:
-        metafunc.parametrize("database_url", DATABASE_URLS)
+        metafunc.parametrize("database_url", DATABASE_URLS, scope="session")

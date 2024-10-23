@@ -30,9 +30,6 @@ async def test_database_force_rollback(table: sqlalchemy.Table, database_url: st
         query = table.insert().values(title="Joker", year=2019)
         await session.execute(query)
 
-        query = table.select().where(table.c.title == "Joker")
-        await session.execute(query)
-
     await db1.disconnect()
     del db1
 
@@ -58,7 +55,7 @@ async def test_database_no_force_rollback(table: sqlalchemy.Table, database_url:
     await db1.disconnect()
     del db1
 
-    db2 = databased.Database(database_url, force_rollback=True)
+    db2 = databased.Database(database_url, force_rollback=False)
     await db2.connect()
 
     async with db2.session() as session:
@@ -66,6 +63,8 @@ async def test_database_no_force_rollback(table: sqlalchemy.Table, database_url:
         movie = await session.fetch_one(query)
         assert movie is not None
         assert movie["title"] == "Joker"
+        query = table.delete().where(table.c.id == movie["id"])
+        await session.execute(query)
 
     await db2.disconnect()
 
@@ -93,7 +92,7 @@ async def test_database_transaction(
     table: sqlalchemy.Table,
 ):
     async with session.transaction() as transaction:
-        query = table.insert().values(title="Joker", year="2019")
+        query = table.insert().values(title="Joker", year=2019)
         await transaction.execute(query)
 
     query = table.select().where(table.c.title == "Joker")
@@ -107,7 +106,7 @@ async def test_database_failed_transaction(
 ):
     with pytest.raises(Exception):
         async with session.transaction() as transaction:
-            query = table.insert().values(title="Joker", year="2019")
+            query = table.insert().values(title="Joker", year=2019)
             await transaction.execute(query)
             raise Exception
 
@@ -121,11 +120,11 @@ async def test_database_nested_transaction(
     table: sqlalchemy.Table,
 ):
     async with session.transaction() as tx1:
-        query = table.insert().values(title="Bees", year="2030")
+        query = table.insert().values(title="Bees", year=2030)
         await tx1.execute(query)
 
         async with tx1.transaction() as tx2:
-            query = table.insert().values(title="Flowers", year="2040")
+            query = table.insert().values(title="Flowers", year=2040)
             await tx2.execute(query)
 
     query = table.select().where(table.c.year > 2025)
@@ -138,15 +137,35 @@ async def test_database_failed_nested_transaction(
     table: sqlalchemy.Table,
 ):
     async with session.transaction() as tx1:
-        query = table.insert().values(title="Bees", year="2030")
+        query = table.insert().values(title="Bees", year=2030)
         await tx1.execute(query)
 
         with pytest.raises(Exception):
             async with tx1.transaction() as tx2:
-                query = table.insert().values(title="Flowers", year="2040")
+                query = table.insert().values(title="Flowers", year=2040)
                 await tx2.execute(query)
                 raise Exception
 
     query = table.select().where(table.c.year > 2025)
     movies = await session.fetch_all(query)
     assert len(movies) == 1
+    assert movies[0]["title"] == "Bees"
+
+
+async def test_database_disconnect_not_connected_database(database_url: str):
+    database = databased.Database(database_url)
+    
+    with pytest.raises(databased.errors.DatabaseNotConnectedError):
+        await database.disconnect()
+
+
+async def test_database_open_connected_session(session: databased.Session):
+    with pytest.raises(databased.errors.SessionAlreadyOpenError):
+        await session.open()
+
+
+async def test_database_commit_not_connected_session(database: databased.Database):
+    session = database.session()
+    
+    with pytest.raises(databased.errors.SessionNotOpenError):
+        await session.commit()
