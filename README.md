@@ -105,7 +105,7 @@ adding private helpers as needed.
 ## TODO
 
 - [ ] CI/CD
-  - [ ] Testing with multiple Python versions
+  - [x] Testing with multiple Python versions
   - [ ] Building and uploading packages to PyPi
 - [ ] Psycopg backend with psycopg_pool support
 - [ ] Database URL parsing and building
