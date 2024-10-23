@@ -171,7 +171,7 @@ async def test_database_failed_nested_transaction(
 
 async def test_database_disconnect_not_connected_database(database_url: str):
     database = databased.Database(database_url)
-    
+
     with pytest.raises(databased.errors.DatabaseNotConnectedError):
         await database.disconnect()
 
@@ -183,6 +183,6 @@ async def test_database_open_connected_session(session: databased.Session):
 
 async def test_database_commit_not_connected_session(database: databased.Database):
     session = database.session()
-    
+
     with pytest.raises(databased.errors.SessionNotOpenError):
         await session.commit()

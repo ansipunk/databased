@@ -1,5 +1,5 @@
-import sqlalchemy
 import pytest
+import sqlalchemy
 
 import databased
 
@@ -52,7 +52,7 @@ def _context(
     engine.dispose()
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 async def database(database_url: str):
     database = databased.Database(database_url, force_rollback=True)
     await database.connect()
@@ -60,7 +60,7 @@ async def database(database_url: str):
     await database.disconnect()
 
 
-@pytest.fixture()
+@pytest.fixture
 async def session(database: databased.Database):
     async with database.session() as session:
         yield session

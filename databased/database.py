@@ -5,7 +5,7 @@ class Database:
     _backend: DatabaseBackend
     _force_rollback: bool
 
-    def __init__(self, url: str, force_rollback: bool = False) -> None:
+    def __init__(self, url: str, *, force_rollback: bool = False) -> None:
         url_parts = url.split("://")
         if len(url_parts) != 2:
             raise ValueError("Invalid database URL")
