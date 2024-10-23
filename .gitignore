@@ -9,3 +9,5 @@ databased.egg-info
 htmlcov
 
 __pycache__
+
+test.db

@@ -164,8 +164,7 @@ class SessionBackend:
             # Sessions with enabled `force_rollback` mode must be
             # closed from `DatabaseBackend` object.
             await self._close()
-
-        self._transaction = None
+            self._transaction = None
 
     async def execute(
         self,
@@ -194,8 +193,9 @@ class SessionBackend:
             query, parameters = self._compile_query(query)
         return await self._fetch_all(query, parameters)
 
-    async def __aenter__(self) -> None:
+    async def __aenter__(self) -> "SessionBackend":
         await self.open()
+        return self
 
     async def __aexit__(
         self,

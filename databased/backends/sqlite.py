@@ -109,25 +109,22 @@ class SqliteSessionBackend(SessionBackend):
         return [self._cast_row(cursor, row) for row in rows]
 
     async def _create_transaction(self, transaction_name: str) -> None:
-        query = "SAVEPOINT :transaction_name;"
-        parameters = {"transaction_name": transaction_name}
-        await self._execute(query, parameters)
+        query = f"SAVEPOINT '{transaction_name}';"
+        await self._execute(query)
 
     async def _commit_transaction(self, transaction_name: str) -> None:
-        query = "RELEASE :transaction_name;"
-        parameters = {"transaction_name": transaction_name}
-        await self._execute(query, parameters)
+        query = f"RELEASE '{transaction_name}';"
+        await self._execute(query)
 
     async def _cancel_transaction(self, transaction_name: str) -> None:
-        query = "ROLLBACK TO :transaction_name;"
-        parameters = {"transaction_name": transaction_name}
-        await self._execute(query, parameters)
+        query = f"ROLLBACK TO '{transaction_name}'"
+        await self._execute(query)
 
     async def _open(self) -> None:
         await self._conn
 
     async def _close(self) -> None:
-        return
+        await self._conn.close()
 
     def transaction(self) -> "SqliteSessionBackend":
         return SqliteSessionBackend(
