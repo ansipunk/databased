@@ -1,4 +1,4 @@
-from typing import Any, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import aiosqlite
 from sqlalchemy.sql import ClauseElement
@@ -41,10 +41,10 @@ class SqliteSessionBackend(SessionBackend):
     def __init__(
         self,
         conn: aiosqlite.Connection,
-        *args: list[Any],
+        *args: List[Any],
         is_root: bool = False,
         force_rollback: bool = False,
-        **kwargs: dict[str, Any],
+        **kwargs: Dict[str, Any],
     ) -> None:
         self._conn = conn
         self._is_root = is_root
@@ -52,7 +52,7 @@ class SqliteSessionBackend(SessionBackend):
 
     def _compile_query(
         self, query: ClauseElement,
-    ) -> tuple[str, Optional[Union[dict[str, Any], list[Any]]]]:
+    ) -> Tuple[str, Optional[Union[Dict[str, Any], List[Any]]]]:
         compiled_query = query.compile(dialect=sqlite.dialect())  # type: ignore
         str_query = str(compiled_query)
 
@@ -67,22 +67,22 @@ class SqliteSessionBackend(SessionBackend):
 
     def _cast_row(
         self, cursor: aiosqlite.Cursor, row: aiosqlite.Row,
-    ) -> dict[str, Any]:
+    ) -> Dict[str, Any]:
         fields = [column[0] for column in cursor.description]
         return {key: value for key, value in zip(fields, row)}
 
     async def _execute(
         self,
         query: str,
-        parameters: Optional[Union[dict[str, Any], list[Any]]] = None,
+        parameters: Optional[Union[Dict[str, Any], List[Any]]] = None,
     ) -> None:
         await self._conn.execute(query, parameters)
 
     async def _fetch_one(
         self,
         query: str,
-        parameters: Optional[Union[dict[str, Any], list[Any]]] = None,
-    ) -> Optional[dict[str, Any]]:
+        parameters: Optional[Union[Dict[str, Any], List[Any]]] = None,
+    ) -> Optional[Dict[str, Any]]:
         cursor = await self._conn.execute(query, parameters)
         row = await cursor.fetchone()
         if not row:
@@ -92,8 +92,8 @@ class SqliteSessionBackend(SessionBackend):
     async def _fetch_all(
         self,
         query: str,
-        parameters: Optional[Union[dict[str, Any], list[Any]]] = None,
-    ) -> list[dict[str, Any]]:
+        parameters: Optional[Union[Dict[str, Any], List[Any]]] = None,
+    ) -> List[Dict[str, Any]]:
         cursor = await self._conn.execute(query, parameters)
         rows = await cursor.fetchall()
         return [self._cast_row(cursor, row) for row in rows]

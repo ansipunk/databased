@@ -1,6 +1,6 @@
 from secrets import token_urlsafe
 from types import TracebackType
-from typing import Any, Optional, Type, Union
+from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 from sqlalchemy.sql import ClauseElement
 
@@ -70,10 +70,10 @@ class SessionBackend:
 
     def __init__(
         self,
-        *args: list[Any],
+        *args: List[Any],
         is_root: bool = False,
         force_rollback: bool = False,
-        **kwargs: dict[str, Any],
+        **kwargs: Dict[str, Any],
     ) -> None:
         self._is_root = is_root
         self._force_rollback = force_rollback
@@ -81,22 +81,22 @@ class SessionBackend:
     async def _execute(
         self,
         query: str,
-        parameters: Optional[Union[dict[str, Any], list[Any]]] = None,
+        parameters: Optional[Union[Dict[str, Any], List[Any]]] = None,
     ) -> None:
         raise NotImplementedError
 
     async def _fetch_one(
         self,
         query: str,
-        parameters: Optional[Union[dict[str, Any], list[Any]]] = None,
-    ) -> Optional[dict[str, Any]]:
+        parameters: Optional[Union[Dict[str, Any], List[Any]]] = None,
+    ) -> Optional[Dict[str, Any]]:
         raise NotImplementedError
 
     async def _fetch_all(
         self,
         query: str,
-        parameters: Optional[Union[dict[str, Any], list[Any]]] = None,
-    ) -> list[dict[str, Any]]:
+        parameters: Optional[Union[Dict[str, Any], List[Any]]] = None,
+    ) -> List[Dict[str, Any]]:
         raise NotImplementedError
 
     async def _create_transaction(self, transaction_name: str) -> None:
@@ -129,7 +129,7 @@ class SessionBackend:
 
     def _compile_query(
         self, query: ClauseElement,
-    ) -> tuple[str, Optional[Union[dict[str, Any], list[Any]]]]:
+    ) -> Tuple[str, Optional[Union[Dict[str, Any], List[Any]]]]:
         raise NotImplementedError
 
     async def open(self) -> None:
@@ -169,7 +169,7 @@ class SessionBackend:
     async def execute(
         self,
         query: Union[ClauseElement, str],
-        parameters: Optional[Union[dict[str, Any], list[Any]]] = None,
+        parameters: Optional[Union[Dict[str, Any], List[Any]]] = None,
     ) -> None:
         if isinstance(query, ClauseElement):
             query, parameters = self._compile_query(query)
@@ -178,8 +178,8 @@ class SessionBackend:
     async def fetch_one(
         self,
         query: Union[ClauseElement, str],
-        parameters: Optional[Union[dict[str, Any], list[Any]]] = None,
-    ) -> Optional[dict[str, Any]]:
+        parameters: Optional[Union[Dict[str, Any], List[Any]]] = None,
+    ) -> Optional[Dict[str, Any]]:
         if isinstance(query, ClauseElement):
             query, parameters = self._compile_query(query)
         return await self._fetch_one(query, parameters)
@@ -187,8 +187,8 @@ class SessionBackend:
     async def fetch_all(
         self,
         query: Union[ClauseElement, str],
-        parameters: Optional[Union[dict[str, Any], list[Any]]] = None,
-    ) -> list[dict[str, Any]]:
+        parameters: Optional[Union[Dict[str, Any], List[Any]]] = None,
+    ) -> List[Dict[str, Any]]:
         if isinstance(query, ClauseElement):
             query, parameters = self._compile_query(query)
         return await self._fetch_all(query, parameters)
