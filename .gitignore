@@ -11,3 +11,6 @@ htmlcov
 __pycache__
 
 *.sqlite
+
+!.github
+!.gitignore
