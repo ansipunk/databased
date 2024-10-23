@@ -4,8 +4,22 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "databased"
+authors = [{name = "ansipunk"}]
+description = "A based asynchronous database connection manager."
+readme = "README.md"
+license = {file = "LICENSE.txt"}
+keywords = ["database", "sqlalchemy", "sqlite", "asyncio"]
 requires-python = ">=3.12,<4"
 dynamic = ["version"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Topic :: Database",
+  "Environment :: Web Environment",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+]
 dependencies = ["SQLAlchemy>=2,<2.1"]
 
 [project.optional-dependencies]
