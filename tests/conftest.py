@@ -1,6 +1,8 @@
 import sqlalchemy
 import pytest
 
+import databased
+
 DATABASE_URLS = (
     "sqlite:///test.db",
 )
@@ -48,6 +50,14 @@ def _context(
     engine = sqlalchemy.create_engine(database_url)
     metadata.drop_all(engine)
     engine.dispose()
+
+
+@pytest.fixture()
+async def database(database_url: str):
+    database = databased.Database(database_url)
+    await database.connect()
+    yield database
+    await database.disconnect()
 
 
 def pytest_generate_tests(metafunc):

@@ -5,7 +5,6 @@ from sqlalchemy.sql import ClauseElement
 from sqlalchemy.dialects import sqlite
 
 from databased.backends import DatabaseBackend, SessionBackend
-from databased.errors import DatabaseAlreadyConnectedError, DatabaseNotConnectedError
 
 
 class SqliteDatabaseBackend(DatabaseBackend):
@@ -21,21 +20,12 @@ class SqliteDatabaseBackend(DatabaseBackend):
         self._conn = aiosqlite.connect(url, isolation_level=None)
 
     async def _connect(self) -> None:
-        if self._connected:
-            raise DatabaseAlreadyConnectedError
-
         self._connected = True
 
     async def _disconnect(self) -> None:
-        if not self._connected:
-            raise DatabaseNotConnectedError
-
         self._connected = False
 
     def _get_session(self) -> "SqliteSessionBackend":
-        if not self._connected:
-            raise DatabaseNotConnectedError
-
         return SqliteSessionBackend(
             self._conn,
             is_root=True,
@@ -129,6 +119,6 @@ class SqliteSessionBackend(SessionBackend):
     def transaction(self) -> "SqliteSessionBackend":
         return SqliteSessionBackend(
             self._conn,
-            is_root=self._is_root,
+            is_root=False,
             force_rollback=self._force_rollback,
         )
