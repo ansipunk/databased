@@ -1,5 +1,8 @@
 name: Tests
 
+permissions:
+  pull-requests: write
+
 on:
   push:
     branches: ["master"]
