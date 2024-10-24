@@ -3,10 +3,10 @@
 A based asynchronous database connection manager.
 
 Based is designed to be used with SQLAlchemy Core requests. Currently, the only
-supported backends are `aiosqlite` and `psycopg`. It's fairly simple to add a
-new backend, should you need one. Work in progress - any contributions - issues
-or pull requests - are very welcome. API might change, as `based` is still at
-its early experiment stage.
+supported databases are SQLite and PostgreSQL. It's fairly simple to add a new
+backend, should you need one. Work in progress - any contributions - issues or
+pull requests - are very welcome. API might change, as library is still at its
+early experiment stage.
 
 This library is inspired by [databases](https://github.com/encode/databases).
 
@@ -70,6 +70,17 @@ async with Database(
 		assert movie is None
 ```
 
+## Connection pools and parallel requests
+
+Based supports connection pools for PostgreSQL databases thanks to psycopg_pool.
+However, when running in `force_rollback` mode, it will only use a single
+connection so it can be rolled back upon database disconnection. SQLite is
+unaffected by `force_rollback` mode, as it doesn't have a connection pool either
+way. This means that PostgreSQL backend in `force_rollback` mode and SQLite
+backend in both modes are not guaranteed to work consistently when multiple
+sessions are used in parallel. Adding a lock might solve this problem with
+variable performance impact.
+
 ## Design choices
 
 As you can see, database backends are split into two classes - `BasedBackend`
@@ -89,7 +100,8 @@ raise `NotImplementedError` in the base class, adding private helpers as needed.
   - [ ] Building and uploading packages to PyPi
   - [x] Testing with multiple Python versions
 - [ ] Database URL parsing and building
+- [ ] Add comments and docstrings
+- [ ] Add lock for PostgreSQL in `force_rollback` mode and SQLite in both modes
 - [ ] Refactor tests
-- [ ] Add comments
-- [x] Psycopg backend with psycopg_pool support
+- [x] PostgreSQL backend
 - [x] Replace nested sessions with transaction stack
