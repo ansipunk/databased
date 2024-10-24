@@ -4,13 +4,13 @@ import aiosqlite
 from sqlalchemy.dialects import sqlite
 from sqlalchemy.sql import ClauseElement
 
-from databased.backends import DatabaseBackend, SessionBackend
+from based.backends import Backend, Session
 
 
-class SqliteDatabaseBackend(DatabaseBackend):
+class SqliteBackend(Backend):
     _url: str
     _force_rollback: bool
-    _force_rollback_session: Optional["SessionBackend"] = None
+    _force_rollback_session: Optional["Session"] = None
     _conn: aiosqlite.Connection
     _connected: bool = False
 
@@ -25,15 +25,15 @@ class SqliteDatabaseBackend(DatabaseBackend):
     async def _disconnect(self) -> None:
         self._connected = False
 
-    def _get_session(self) -> "SqliteSessionBackend":
-        return SqliteSessionBackend(
+    def _get_session(self) -> "SqliteSession":
+        return SqliteSession(
             self._conn,
             is_root=True,
             force_rollback=self._force_rollback,
         )
 
 
-class SqliteSessionBackend(SessionBackend):
+class SqliteSession(Session):
     _conn: aiosqlite.Connection
     _is_root: bool
     _force_rollback: bool
@@ -116,8 +116,8 @@ class SqliteSessionBackend(SessionBackend):
     async def _close(self) -> None:
         await self._conn.close()
 
-    def transaction(self) -> "SqliteSessionBackend":
-        return SqliteSessionBackend(
+    def transaction(self) -> "SqliteSession":
+        return SqliteSession(
             self._conn,
             is_root=False,
             force_rollback=self._force_rollback,

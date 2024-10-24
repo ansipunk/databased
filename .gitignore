@@ -1,5 +1,5 @@
 .venv
-databased.egg-info
+*.egg-info
 
 .mypy_cache
 .ruff_cache
@@ -10,8 +10,6 @@ htmlcov
 coverage.xml
 
 __pycache__
-
-*.sqlite
 
 !.github
 !.gitignore

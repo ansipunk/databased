@@ -4,7 +4,7 @@ import tempfile
 import pytest
 import sqlalchemy
 
-import databased
+import based
 
 RAW_DATABASE_URLS = os.environ.get("BASED_TEST_DB_URLS", "")
 DATABASE_URLS = RAW_DATABASE_URLS.split(",") if RAW_DATABASE_URLS else []
@@ -57,14 +57,14 @@ def _context(
 
 @pytest.fixture
 async def database(database_url: str):
-    database = databased.Database(database_url, force_rollback=True)
+    database = based.Database(database_url, force_rollback=True)
     await database.connect()
     yield database
     await database.disconnect()
 
 
 @pytest.fixture
-async def session(database: databased.Database):
+async def session(database: based.Database):
     async with database.session() as session:
         yield session
 

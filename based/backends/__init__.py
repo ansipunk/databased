@@ -4,13 +4,13 @@ from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 from sqlalchemy.sql import ClauseElement
 
-from databased import errors
+from based import errors
 
 
-class DatabaseBackend:
+class Backend:
     _url: str
     _force_rollback: bool
-    _force_rollback_session: Optional["SessionBackend"] = None
+    _force_rollback_session: Optional["Session"] = None
     _connected: bool = False
 
     def __init__(self, url: str, *, force_rollback: bool = False) -> None:
@@ -23,10 +23,10 @@ class DatabaseBackend:
     async def _disconnect(self) -> None:
         raise NotImplementedError
 
-    def _get_session(self) -> "SessionBackend":
-        """Return a new SessionBackend object with connection from this pool.
+    def _get_session(self) -> "Session":
+        """Return a new Session object with connection from this pool.
 
-        It is crucial that returned SessionBackend objects have their
+        It is crucial that returned Session objects have their
         `_is_root` field set to `True`.
 
         If there's asynchronous initialization to be done, it should be performed
@@ -34,7 +34,7 @@ class DatabaseBackend:
         """
         raise NotImplementedError
 
-    def session(self) -> "SessionBackend":
+    def session(self) -> "Session":
         if not self._connected:
             raise errors.DatabaseNotConnectedError
 
@@ -63,7 +63,7 @@ class DatabaseBackend:
         await self._disconnect()
 
 
-class SessionBackend:
+class Session:
     _is_root: bool
     _force_rollback: bool
     _transaction: Optional[str] = None
@@ -114,10 +114,10 @@ class SessionBackend:
     async def _close(self) -> None:
         raise NotImplementedError
 
-    def transaction(self) -> "SessionBackend":
-        """Return a new SessionBackend object with the same connection.
+    def transaction(self) -> "Session":
+        """Return a new Session object with the same connection.
 
-        It is crucial that returned SessionBackend objects have their
+        It is crucial that returned Session objects have their
         `_is_root` field set to `False`.
 
         This method is named `transaction` so it can be used as following:
@@ -193,7 +193,7 @@ class SessionBackend:
             query, parameters = self._compile_query(query)
         return await self._fetch_all(query, parameters)
 
-    async def __aenter__(self) -> "SessionBackend":
+    async def __aenter__(self) -> "Session":
         await self.open()
         return self
 

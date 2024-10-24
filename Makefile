@@ -17,12 +17,12 @@ bootstrap:
 	$(PYTHON) -m pip install -e .[sqlite,dev]
 
 lint: $(VENV)
-	$(PYTHON) -m ruff check databased tests
-	$(PYTHON) -m mypy --strict databased
+	$(PYTHON) -m ruff check based tests
+	$(PYTHON) -m mypy --strict based
 
 test: $(VENV)
 	$(PYTHON) -m pytest
 
 clean:
-	rm -rf $(VENV) .coverage .mypy_cache .pytest_cache .ruff_cache htmlcov databased.egg-info coverage.xml *.sqlite
+	rm -rf $(VENV) .coverage .mypy_cache .pytest_cache .ruff_cache htmlcov based.egg-info coverage.xml
 	find . -type d -name "__pycache__" | xargs rm -rf

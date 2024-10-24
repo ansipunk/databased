@@ -1,4 +1,4 @@
-# Databased
+# Based
 
 A based asynchronous database connection manager.
 
@@ -12,13 +12,13 @@ This library is inspired by [databases](https://github.com/encode/databases).
 ## Usage
 
 ```bash
-pip install databased[sqlite]
+pip install based[sqlite]
 ```
 
 ```python
-import databased
+import based
 
-database = databased.Database("sqlite:///database.sqlite")
+database = based.Database("sqlite:///database.sqlite")
 await database.connect()
 
 async with database.session() as session:
@@ -42,14 +42,14 @@ await database.disconnect()
 
 As you can see in the example above, both SQLAlchemy and raw SQL queries are
 supported, however, using SQLAlchemy Core is the preferred way to interact with
-databased. It also supports nested transactions. Instead of keeping track of
-transaction stack, databased just creates child Session objects that only manage
+based. It also supports nested transactions. Instead of keeping track of
+transaction stack, based just creates child Session objects that only manage
 themselves. Should you need to manually control Session's lifecycle for any
 reason, it is also possible, however, you must explicitly open, close, commit
 and cancel sessions:
 
 ```python
-def db(func):
+def sqlite(func):
     async def wrapper(*args, **kwargs):
         session = database.session()
         await session.open()
@@ -66,9 +66,9 @@ def db(func):
     return wrapper
 
 
-@db
+@sqlite
 async def get_movie(
-    session: databased.Session, title: str,
+    session: based.Session, title: str,
 ) -> dict[str, Any] | None:
     query = Movies.select().where(Movies.c.title == title)
     return await session.fetch_one(query)
@@ -106,16 +106,16 @@ async with Database("sqlite:///test.db", force_rollback=True) as database:
 
 ## Design choices
 
-As you can see, database backends are split into two classes - `DatabaseBackend`
-and `SessionBackend`. This design choice might be not very clear with SQLite,
-however, it is bound to be handy with alternative backends that support
-connection pools like psycopg and psycopg_pool.
+As you can see, database backends are split into two classes - `BasedBackend`
+and `Session`. This design choice might be not very clear with SQLite, however,
+it is bound to be handy with alternative backends that support connection pools
+like psycopg and psycopg_pool.
 
 ## Contributing
 
 This library was designed to make adding new backends as simple as possible. You
-need to implement `DatabaseBackend` and `SessionBackend` classes and add their
-initialization to the `Databased` class. Just follow SQLite's example. You only
+need to implement `BasedBackend` and `Session` classes and add their
+initialization to the `Database` class. Just follow SQLite's example. You only
 need to implement methods that raise `NotImplementedError` in base classes,
 adding private helpers as needed.
 

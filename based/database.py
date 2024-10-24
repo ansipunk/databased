@@ -1,11 +1,11 @@
 from types import TracebackType
 from typing import Optional, Type
 
-from databased.backends import DatabaseBackend, SessionBackend
+from based.backends import Backend, Session
 
 
 class Database:
-    _backend: DatabaseBackend
+    _backend: Backend
     _force_rollback: bool
 
     def __init__(self, url: str, *, force_rollback: bool = False) -> None:
@@ -15,9 +15,9 @@ class Database:
         schema = url_parts[0]
 
         if schema == "sqlite":
-            from databased.backends.sqlite import SqliteDatabaseBackend
+            from based.backends.sqlite import SqliteBackend
             sqlite_url = url_parts[1][1:]
-            self._backend = SqliteDatabaseBackend(
+            self._backend = SqliteBackend(
                 sqlite_url, force_rollback=force_rollback,
             )
 
@@ -28,7 +28,7 @@ class Database:
     async def disconnect(self) -> None:
         await self._backend.disconnect()
 
-    def session(self) -> SessionBackend:
+    def session(self) -> Session:
         return self._backend.session()
 
     async def __aenter__(self) -> "Database":
