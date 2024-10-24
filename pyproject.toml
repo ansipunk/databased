@@ -3,7 +3,7 @@ requires = [ "setuptools", "setuptools-scm" ]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "databased"
+name = "based"
 authors = [{name = "ansipunk"}]
 description = "A based asynchronous database connection manager."
 readme = "README.md"
@@ -38,10 +38,10 @@ dev = [
 ]
 
 [tool.setuptools.dynamic]
-version = { attr = "databased.__version__" }
+version = { attr = "based.__version__" }
 
 [tool.pytest.ini_options]
-addopts = "-n 2 --cov=databased --cov-report=term-missing --cov-report=html --cov-report=xml"
+addopts = "-n 2 --cov=based --cov-report=term-missing --cov-report=html --cov-report=xml"
 testpaths = ["tests"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "session"

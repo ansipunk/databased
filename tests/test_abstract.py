@@ -1,11 +1,11 @@
 import pytest
 import sqlalchemy
 
-import databased.backends
+import based.backends
 
 
 async def test_abstract_backend(database_url: str):
-    backend = databased.backends.DatabaseBackend(database_url)
+    backend = based.backends.Backend(database_url)
 
     with pytest.raises(NotImplementedError):
         await backend.connect()
@@ -20,7 +20,7 @@ async def test_abstract_backend(database_url: str):
 
 
 async def test_abstract_session(table: sqlalchemy.Table):
-    session = databased.backends.SessionBackend(is_root = True)
+    session = based.backends.Session(is_root = True)
     raw_query = "SELECT 1;"
     transaction = "transaction"
 

@@ -1,10 +1,10 @@
 import pytest
 import sqlalchemy
 
-import databased
+import based
 
 
-async def test_database(table: sqlalchemy.Table, database: databased.Database):
+async def test_database(table: sqlalchemy.Table, database: based.Database):
     async with database.session() as session:
         query = table.select().where(table.c.year > 2000)
         movie = await session.fetch_one(query)
@@ -14,18 +14,18 @@ async def test_database(table: sqlalchemy.Table, database: databased.Database):
 
 def test_database_invalid_database_url():
     with pytest.raises(ValueError):
-        databased.Database(":memory:")
+        based.Database(":memory:")
 
 
-async def test_database_connect_already_connected_db(database: databased.Database):
-    with pytest.raises(databased.errors.DatabaseAlreadyConnectedError):
+async def test_database_connect_already_connected_db(database: based.Database):
+    with pytest.raises(based.errors.DatabaseAlreadyConnectedError):
         await database.connect()
 
 
 async def test_database_force_rollback(table: sqlalchemy.Table, database_url: str):
     title = "Three Display Boards Inside Springfield, Missouri"
 
-    db1 = databased.Database(database_url, force_rollback=True)
+    db1 = based.Database(database_url, force_rollback=True)
     await db1.connect()
 
     async with db1.session() as session:
@@ -35,7 +35,7 @@ async def test_database_force_rollback(table: sqlalchemy.Table, database_url: st
     await db1.disconnect()
     del db1
 
-    db2 = databased.Database(database_url, force_rollback=True)
+    db2 = based.Database(database_url, force_rollback=True)
     await db2.connect()
 
     async with db2.session() as session:
@@ -49,7 +49,7 @@ async def test_database_force_rollback(table: sqlalchemy.Table, database_url: st
 async def test_database_no_force_rollback(table: sqlalchemy.Table, database_url: str):
     title = "Jojo Hare"
 
-    db1 = databased.Database(database_url, force_rollback=False)
+    db1 = based.Database(database_url, force_rollback=False)
     await db1.connect()
 
     async with db1.session() as session:
@@ -59,7 +59,7 @@ async def test_database_no_force_rollback(table: sqlalchemy.Table, database_url:
     await db1.disconnect()
     del db1
 
-    db2 = databased.Database(database_url, force_rollback=False)
+    db2 = based.Database(database_url, force_rollback=False)
     await db2.connect()
 
     async with db2.session() as session:
@@ -73,14 +73,14 @@ async def test_database_no_force_rollback(table: sqlalchemy.Table, database_url:
 
 
 async def test_database_not_connected_get_session(database_url: str):
-    database = databased.Database(database_url)
+    database = based.Database(database_url)
 
-    with pytest.raises(databased.errors.DatabaseNotConnectedError):
+    with pytest.raises(based.errors.DatabaseNotConnectedError):
         database.session()
 
 
 async def test_database_compile_query_without_params(
-    session: databased.Session,
+    session: based.Session,
     table: sqlalchemy.Table,
 ):
     query = table.select()
@@ -92,7 +92,7 @@ async def test_database_compile_query_without_params(
 
 
 async def test_database_transaction(
-    session: databased.Session,
+    session: based.Session,
     table: sqlalchemy.Table,
 ):
     title = "Dull Blinders"
@@ -107,7 +107,7 @@ async def test_database_transaction(
 
 
 async def test_database_failed_transaction(
-    session: databased.Session,
+    session: based.Session,
     table: sqlalchemy.Table,
 ):
     title = "North Park"
@@ -124,7 +124,7 @@ async def test_database_failed_transaction(
 
 
 async def test_database_nested_transaction(
-    session: databased.Session,
+    session: based.Session,
     table: sqlalchemy.Table,
 ):
     title_a = "It's never sunny in Portland"
@@ -146,7 +146,7 @@ async def test_database_nested_transaction(
 
 
 async def test_database_failed_nested_transaction(
-    session: databased.Session,
+    session: based.Session,
     table: sqlalchemy.Table,
 ):
     title_a = "Life Note"
@@ -170,27 +170,27 @@ async def test_database_failed_nested_transaction(
 
 
 async def test_database_disconnect_not_connected_database(database_url: str):
-    database = databased.Database(database_url)
+    database = based.Database(database_url)
 
-    with pytest.raises(databased.errors.DatabaseNotConnectedError):
+    with pytest.raises(based.errors.DatabaseNotConnectedError):
         await database.disconnect()
 
 
-async def test_database_open_connected_session(session: databased.Session):
-    with pytest.raises(databased.errors.SessionAlreadyOpenError):
+async def test_database_open_connected_session(session: based.Session):
+    with pytest.raises(based.errors.SessionAlreadyOpenError):
         await session.open()
 
 
-async def test_database_commit_not_connected_session(database: databased.Database):
+async def test_database_commit_not_connected_session(database: based.Database):
     session = database.session()
 
-    with pytest.raises(databased.errors.SessionNotOpenError):
+    with pytest.raises(based.errors.SessionNotOpenError):
         await session.commit()
 
 
 async def test_database_context_manager(database_url: str, table: sqlalchemy.Table):
     async with (
-        databased.Database(database_url) as database,
+        based.Database(database_url) as database,
         database.session() as session,
     ):
         query = table.select().where(table.c.title == "Blade Sprinter 2049")
@@ -199,11 +199,11 @@ async def test_database_context_manager(database_url: str, table: sqlalchemy.Tab
 
 
 async def test_database_context_manager_exception(database_url: str):
-    database = databased.Database(database_url)
+    database = based.Database(database_url)
 
     with pytest.raises(Exception):
         async with database:
             raise Exception
 
-    with pytest.raises(databased.errors.DatabaseNotConnectedError):
+    with pytest.raises(based.errors.DatabaseNotConnectedError):
         await database.disconnect()
