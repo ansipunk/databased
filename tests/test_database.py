@@ -189,13 +189,11 @@ async def test_database_commit_not_connected_session(database: based.Database):
 
 
 async def test_database_context_manager(database_url: str, table: sqlalchemy.Table):
-    async with (
-        based.Database(database_url) as database,
-        database.session() as session,
-    ):
-        query = table.select().where(table.c.title == "Blade Sprinter 2049")
-        movie = await session.fetch_one(query)
-        assert movie is not None
+    async with based.Database(database_url) as database:
+        async with database.session() as session:
+            query = table.select().where(table.c.title == "Blade Sprinter 2049")
+            movie = await session.fetch_one(query)
+            assert movie is not None
 
 
 async def test_database_context_manager_exception(database_url: str):
