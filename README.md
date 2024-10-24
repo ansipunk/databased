@@ -87,6 +87,23 @@ where you don't want to manually clean up made changes after each test.
 To make it possible, `Database` object will only operate with one single session
 and each new requested session will be a nested transaction of it.
 
+```python
+async with Database("sqlite:///test.db", force_rollback=True) as database:
+	async with database.session() as session:
+		query = Movies.insert().values(title="Newboy", year=2004)
+		await session.execute(query)
+
+		query = Movies.select().where(Movies.c.title == "Newboy")
+		movie = await session.execute(query)
+		assert movie is not None
+
+async with Database("sqlite:///test.db", force_rollback=True) as database:
+	async with database.session() as session:
+		query = Movies.select().where(Movies.c.title == "Newboy")
+		movie = await session.execute(query)
+		assert movie is None
+```
+
 ## Design choices
 
 As you can see, database backends are split into two classes - `DatabaseBackend`
@@ -109,3 +126,4 @@ adding private helpers as needed.
   - [ ] Building and uploading packages to PyPi
 - [ ] Psycopg backend with psycopg_pool support
 - [ ] Database URL parsing and building
+- [ ] Replace nested sessions with transaction stack

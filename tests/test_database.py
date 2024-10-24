@@ -186,3 +186,24 @@ async def test_database_commit_not_connected_session(database: databased.Databas
 
     with pytest.raises(databased.errors.SessionNotOpenError):
         await session.commit()
+
+
+async def test_database_context_manager(database_url: str, table: sqlalchemy.Table):
+    async with (
+        databased.Database(database_url) as database,
+        database.session() as session,
+    ):
+        query = table.select().where(table.c.title == "Blade Sprinter 2049")
+        movie = await session.fetch_one(query)
+        assert movie is not None
+
+
+async def test_database_context_manager_exception(database_url: str):
+    database = databased.Database(database_url)
+
+    with pytest.raises(Exception):
+        async with database:
+            raise Exception
+
+    with pytest.raises(databased.errors.DatabaseNotConnectedError):
+        await database.disconnect()
