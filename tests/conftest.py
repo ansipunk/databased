@@ -1,11 +1,14 @@
+import os
+import tempfile
+
 import pytest
 import sqlalchemy
 
 import databased
 
-DATABASE_URLS = (
-    "sqlite:///test.sqlite",
-)
+RAW_DATABASE_URLS = os.environ.get("BASED_TEST_DB_URLS", "")
+DATABASE_URLS = RAW_DATABASE_URLS.split(",") if RAW_DATABASE_URLS else []
+DATABASE_URLS.append("sqlite")
 
 
 @pytest.fixture(scope="session")
@@ -66,6 +69,16 @@ async def session(database: databased.Database):
         yield session
 
 
+@pytest.fixture(scope="session")
+def database_url(raw_database_url: str, worker_id: str) -> str:
+    if raw_database_url != "sqlite":
+        yield raw_database_url
+    else:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db_path = f"{tmpdir}/{worker_id}.sqlite"
+            yield f"sqlite:///{db_path!s}"
+
+
 def pytest_generate_tests(metafunc):
-    if "database_url" in metafunc.fixturenames:
-        metafunc.parametrize("database_url", DATABASE_URLS, scope="session")
+    if "raw_database_url" in metafunc.fixturenames:
+        metafunc.parametrize("raw_database_url", DATABASE_URLS, scope="session")
